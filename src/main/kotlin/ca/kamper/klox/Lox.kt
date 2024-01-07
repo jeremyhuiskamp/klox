@@ -25,9 +25,10 @@ fun runFile(path: String) {
 fun run(code: String) {
     val scanner = Scanner(code)
     val tokens = scanner.scanTokens()
-    for (token in tokens) {
-        println(token)
-    }
+    val parser = Parser(tokens)
+    val expr = parser.parse() ?: return
+    if (hadError) return
+    println(AstPrinter.print(expr))
 }
 
 fun runPrompt() {
@@ -41,6 +42,11 @@ fun runPrompt() {
 
 fun error(line: Int, message: String) {
     report(line, "", message)
+}
+
+fun error(token: Token, message: String) {
+    val where = if (token.type == TokenType.EOF) "end" else "'${token.lexeme}'"
+    report(token.line, " at $where", message)
 }
 
 fun report(line: Int, where: String, message: String) {
