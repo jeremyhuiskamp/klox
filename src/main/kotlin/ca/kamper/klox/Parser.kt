@@ -11,13 +11,26 @@ class Parser(private val tokens: List<Token>) {
         null
     }
 
-    private fun expression(): Expr = equality()
+    private fun expression(): Expr = ternary()
 
     // The method names are a bit weird here.  Eg, we start by looking
     // for an equality expression, but we don't actually care if there
     // is one, we're just checking for equality operators after looking
     // for all the other, higher-precedence ones.
     // Not sure exactly how to name these better though 🤔
+
+    private fun ternary(): Expr {
+        var expr = equality()
+
+        while (match(QUESTION)) {
+            val left = equality()
+            consume(COLON, "Expect ':'")
+            val right = ternary()
+            expr = Expr.Ternary(expr, left, right)
+        }
+
+        return expr
+    }
 
     private fun equality(): Expr {
         var expr = comparison()

@@ -25,6 +25,9 @@ class AstPrinter : Expr.Visitor<String> {
     override fun visitUnaryExpr(expr: Expr.Unary) =
         parenthesize(expr.operator.lexeme, expr.right)
 
+    override fun visitTernaryExpr(expr: Expr.Ternary) =
+        parenthesize("?:", expr.condition, expr.left, expr.right)
+
     private fun parenthesize(name: String, vararg exprs: Expr) =
         StringBuilder("($name")
             .let { builder ->

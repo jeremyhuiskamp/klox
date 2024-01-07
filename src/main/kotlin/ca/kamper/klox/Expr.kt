@@ -21,6 +21,8 @@ interface Expr {
 //        fun visitThisExpr(expr: This): R
         fun visitUnaryExpr(expr: Unary): R
 //        fun visitVariableExpr(expr: Variable): R
+
+        fun visitTernaryExpr(expr: Ternary): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -72,5 +74,13 @@ interface Expr {
         val right: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitUnaryExpr(this)
+    }
+
+    data class Ternary(
+        val condition: Expr,
+        val left: Expr,
+        val right: Expr,
+    ) : Expr {
+        override fun <R> accept(visitor: Visitor<R>): R = visitor.visitTernaryExpr(this)
     }
 }

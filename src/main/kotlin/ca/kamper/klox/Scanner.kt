@@ -44,6 +44,9 @@ class Scanner(private val code: String) {
             '\n' -> line++
             '"' -> string()
 
+            '?' -> addToken(QUESTION)
+            ':' -> addToken(COLON)
+
             else ->
                 if (isDigit(c)) {
                     number()

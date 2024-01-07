@@ -37,6 +37,11 @@ class ReversePolishNotationConverter : Expr.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitTernaryExpr(expr: Expr.Ternary): String {
+        // could be `cond left right ?:`?
+        TODO("Not yet implemented")
+    }
+
     override fun visitAssignExpr(expr: Expr.Assign): String {
         TODO("Not yet implemented")
     }

@@ -43,5 +43,8 @@ enum class TokenType {
     VAR,
     WHILE,
 
+    QUESTION,
+    COLON,
+
     EOF;
 }
