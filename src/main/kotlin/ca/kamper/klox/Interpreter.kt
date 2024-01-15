@@ -156,12 +156,24 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
     private fun execute(stmt: Stmt) = stmt.accept(this)
 
-    fun interpret(stmts: List<Stmt>, report: (RuntimeError) -> Unit) {
+    fun interpret(stmts: List<Stmt>, report: (RuntimeError) -> Unit): List<String> {
+        val expressionValues = mutableListOf<String>()
         try {
-            stmts.forEach { execute(it) }
+            stmts.forEach { stmt ->
+                when (stmt) {
+                    is Stmt.Expression ->
+                        // should have same effect as executing them, but we
+                        // keep the result for top-level statements so that
+                        // the interpreter can print them
+                        expressionValues.add(stringify(evaluate(stmt.expr)))
+
+                    else -> execute(stmt)
+                }
+            }
         } catch (e: RuntimeError) {
             report(e)
         }
+        return expressionValues
     }
 
     fun interpret(expr: Expr, report: (RuntimeError) -> Unit): String? {

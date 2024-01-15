@@ -31,7 +31,8 @@ fun run(code: String) {
     val parser = Parser(tokens)
     val stmts = parser.parse()
     if (hadError) return
-    interpreter.interpret(stmts, ::runtimeError)
+    val expressionValues = interpreter.interpret(stmts, ::runtimeError)
+    expressionValues.forEach(::println)
 }
 
 fun runPrompt() {
