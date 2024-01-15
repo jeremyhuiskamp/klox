@@ -19,11 +19,16 @@ class AstPrinter : Expr.Visitor<String> {
     override fun visitGroupingExpr(expr: Expr.Grouping) =
         parenthesize("group", expr.expression)
 
+    // TODO: might want to quote strings here?
     override fun visitLiteralExpr(expr: Expr.Literal) =
         if (expr.value == null) "nil" else expr.value.toString()
 
     override fun visitUnaryExpr(expr: Expr.Unary) =
         parenthesize(expr.operator.lexeme, expr.right)
+
+    override fun visitVariableExpr(expr: Expr.Variable): String {
+        return parenthesize("var", expr)
+    }
 
     private fun parenthesize(name: String, vararg exprs: Expr) =
         StringBuilder("($name")

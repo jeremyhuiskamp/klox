@@ -20,7 +20,7 @@ interface Expr {
 //        fun visitSuperExpr(expr: Super): R
 //        fun visitThisExpr(expr: This): R
         fun visitUnaryExpr(expr: Unary): R
-//        fun visitVariableExpr(expr: Variable): R
+        fun visitVariableExpr(expr: Variable): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -72,5 +72,12 @@ interface Expr {
         val right: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitUnaryExpr(this)
+    }
+
+    data class Variable(
+        // only TokenType.IDENTIFIER would be legal here; could we enforce that?
+        val name: Token,
+    ) : Expr {
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visitVariableExpr(this)
     }
 }

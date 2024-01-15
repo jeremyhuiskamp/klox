@@ -4,6 +4,8 @@ import java.io.File
 import kotlin.system.exitProcess
 
 var hadError = false
+var hadRuntimeError = false
+val interpreter = Interpreter()
 
 fun main(args: Array<String>) {
     if (args.size > 1) {
@@ -20,15 +22,16 @@ fun runFile(path: String) {
     run(File(path).readText())
 
     if (hadError) exitProcess(65)
+    if (hadRuntimeError) exitProcess(70)
 }
 
 fun run(code: String) {
     val scanner = Scanner(code)
     val tokens = scanner.scanTokens()
     val parser = Parser(tokens)
-    val expr = parser.parse() ?: return
+    val stmts = parser.parse()
     if (hadError) return
-    println(AstPrinter.print(expr))
+    interpreter.interpret(stmts, ::runtimeError)
 }
 
 fun runPrompt() {
@@ -52,4 +55,9 @@ fun error(token: Token, message: String) {
 fun report(line: Int, where: String, message: String) {
     System.err.println("[line $line] Error$where: $message")
     hadError = true
+}
+
+fun runtimeError(error: RuntimeError) {
+    System.err.println("[line ${error.token.line}] ${error.message}")
+    hadRuntimeError = true
 }

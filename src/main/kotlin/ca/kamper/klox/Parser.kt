@@ -5,19 +5,103 @@ import ca.kamper.klox.TokenType.*
 class Parser(private val tokens: List<Token>) {
     private var current = 0
 
-    fun parse() = try {
+    fun parseExpr() = try {
         expression()
     } catch (e: ParseError) {
         null
     }
 
-    private fun expression(): Expr = equality()
+    fun parse(): List<Stmt> = declarations()
+
+    private fun declarations(
+        hasNext: () -> Boolean = { !isAtEnd() },
+    ) =
+        object : Iterator<Stmt?> {
+            override fun hasNext() = hasNext()
+            override fun next() = declaration()
+        }
+            .asSequence()
+            .filterNotNull() // book doesn't have this?
+            .toList()
+
+    private fun declaration(): Stmt? {
+        try {
+            if (match(VAR)) return varDeclaration()
+
+            return statement()
+        } catch (e: ParseError) {
+            synchronize()
+            return null
+        }
+    }
+
+    private fun varDeclaration(): Stmt {
+        val name = consume(IDENTIFIER, "Expect variable name.")
+
+        val initializer = if (match(EQUAL)) expression() else null
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.")
+
+        return Stmt.Var(name, initializer)
+    }
+
+    private fun statement(): Stmt {
+        if (match(PRINT)) {
+            return printStatement()
+        }
+
+        if (match(LEFT_BRACE)) {
+            return blockStatement()
+        }
+
+        return expressionStatement()
+    }
+
+    private fun blockStatement(): Stmt {
+        val stmts = declarations {
+            !check(RIGHT_BRACE) && !isAtEnd()
+        }
+        consume(RIGHT_BRACE, "Expect '}' after block.")
+        return Stmt.Block(stmts)
+    }
+
+    private fun printStatement(): Stmt {
+        val expr = expression()
+        consume(SEMICOLON, "Expect ';' after value.")
+        return Stmt.Print(expr)
+    }
+
+    private fun expressionStatement(): Stmt {
+        val expr = expression()
+        consume(SEMICOLON, "Expect ';' after expression.")
+        return Stmt.Expression(expr)
+    }
+
+    private fun expression(): Expr = assignment()
 
     // The method names are a bit weird here.  Eg, we start by looking
-    // for an equality expression, but we don't actually care if there
-    // is one, we're just checking for equality operators after looking
+    // for an assignment expression, but we don't actually care if there
+    // is one, we're just checking for assignment operators after looking
     // for all the other, higher-precedence ones.
-    // Not sure exactly how to name these better though 🤔
+    // Not sure exactly how to name these better though 🤔, "assignmentOrHigherPrecedence()"?
+
+    private fun assignment(): Expr {
+        val expr = equality()
+
+        if (match(EQUAL)) {
+            val equals = previous()
+            val value = assignment()
+
+            if (expr is Expr.Variable) {
+                val name = expr.name
+                return Expr.Assign(name, value)
+            }
+
+            error(equals, "Invalid assignment target.")
+        }
+
+        return expr
+    }
 
     private fun equality(): Expr {
         var expr = comparison()
@@ -89,6 +173,8 @@ class Parser(private val tokens: List<Token>) {
             val expr = expression()
             consume(RIGHT_PAREN, "Expect ')' after expression.")
             return Expr.Grouping(expr)
+        } else if (match(IDENTIFIER)) {
+            return Expr.Variable(previous())
         }
 
         throw error(peek(), "Expect expression.")
@@ -122,6 +208,7 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun error(token: Token, message: String): ParseError {
+        // TODO: don't have side-effects like this!
         ca.kamper.klox.error(token, message)
         return ParseError()
     }
