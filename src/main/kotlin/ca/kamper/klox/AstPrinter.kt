@@ -23,6 +23,10 @@ class AstPrinter : Expr.Visitor<String> {
     override fun visitLiteralExpr(expr: Expr.Literal) =
         if (expr.value == null) "nil" else expr.value.toString()
 
+    override fun visitLogicalExpr(expr: Expr.Logical): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitUnaryExpr(expr: Expr.Unary) =
         parenthesize(expr.operator.lexeme, expr.right)
 

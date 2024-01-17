@@ -6,6 +6,9 @@ interface Stmt {
         fun visitPrintStmt(stmt: Print): R
         fun visitVarStmt(stmt: Var): R
         fun visitBlockStmt(stmt: Block): R
+        fun visitIfStmt(stmt: If): R
+        fun visitWhileStmt(stmt: While): R
+        fun visitForStmt(stmt: For): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -37,5 +40,33 @@ interface Stmt {
     ) : Stmt {
         override fun <R> accept(visitor: Visitor<R>) =
             visitor.visitBlockStmt(this)
+    }
+
+    data class If(
+        val condition: Expr,
+        val thenBranch: Stmt,
+        val elseBranch: Stmt?,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitIfStmt(this)
+    }
+
+    data class While(
+        val condition: Expr,
+        val body: Stmt,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitWhileStmt(this)
+
+    }
+
+    data class For(
+        val initializer: Stmt?,
+        val condition: Expr?,
+        val increment: Expr?,
+        val body: Stmt,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitForStmt(this)
     }
 }

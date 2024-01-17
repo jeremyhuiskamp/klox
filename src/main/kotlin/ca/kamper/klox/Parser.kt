@@ -46,6 +46,18 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun statement(): Stmt {
+        if (match(FOR)) {
+            return forStatement()
+        }
+
+        if (match(WHILE)) {
+            return whileStatement()
+        }
+
+        if (match(IF)) {
+            return ifStatement()
+        }
+
         if (match(PRINT)) {
             return printStatement()
         }
@@ -55,6 +67,51 @@ class Parser(private val tokens: List<Token>) {
         }
 
         return expressionStatement()
+    }
+
+    private fun forStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+        val initializer =
+            if (match(VAR)) varDeclaration()
+            else if (!match(SEMICOLON)) expressionStatement()
+            else null
+
+        // alternative: have the condition be non-null, and
+        // fall back on `true` instead of null
+        val condition =
+            if (!match(SEMICOLON)) expressionStatement().expr
+            else null
+
+        val increment =
+            if (!check(RIGHT_PAREN)) expression()
+            else null
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        val body = statement()
+
+        return Stmt.For(initializer, condition, increment, body)
+    }
+
+    private fun whileStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'while'.")
+        val condition = expression()
+        consume(RIGHT_PAREN, "Expect ')' after while condition.")
+
+        val body = statement()
+
+        return Stmt.While(condition, body)
+    }
+
+    private fun ifStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.")
+        val condition = expression()
+        consume(RIGHT_PAREN, "Expect ')' after if condition.")
+
+        val thenBranch = statement()
+        val elseBranch = if (match(ELSE)) statement() else null
+
+        return Stmt.If(condition, thenBranch, elseBranch)
     }
 
     private fun blockStatement(): Stmt {
@@ -71,7 +128,7 @@ class Parser(private val tokens: List<Token>) {
         return Stmt.Print(expr)
     }
 
-    private fun expressionStatement(): Stmt {
+    private fun expressionStatement(): Stmt.Expression {
         val expr = expression()
         consume(SEMICOLON, "Expect ';' after expression.")
         return Stmt.Expression(expr)
@@ -86,7 +143,7 @@ class Parser(private val tokens: List<Token>) {
     // Not sure exactly how to name these better though 🤔, "assignmentOrHigherPrecedence()"?
 
     private fun assignment(): Expr {
-        val expr = equality()
+        val expr = or()
 
         if (match(EQUAL)) {
             val equals = previous()
@@ -100,6 +157,24 @@ class Parser(private val tokens: List<Token>) {
             error(equals, "Invalid assignment target.")
         }
 
+        return expr
+    }
+
+    private fun or(): Expr {
+        var expr = and()
+        while (match(OR)) {
+            val token = previous()
+            expr = Expr.Logical(expr, token, and())
+        }
+        return expr
+    }
+
+    private fun and(): Expr {
+        var expr = equality()
+        while (match(AND)) {
+            val token = previous()
+            expr = Expr.Logical(expr, token, equality())
+        }
         return expr
     }
 

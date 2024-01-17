@@ -33,6 +33,10 @@ class ReversePolishNotationConverter : Expr.Visitor<String> {
 
     override fun visitLiteralExpr(expr: Expr.Literal) = expr.value.toString()
 
+    override fun visitLogicalExpr(expr: Expr.Logical): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitUnaryExpr(expr: Expr.Unary): String {
         TODO("Not yet implemented")
     }

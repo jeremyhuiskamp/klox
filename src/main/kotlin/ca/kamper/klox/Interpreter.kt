@@ -80,6 +80,15 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         return value
     }
 
+    override fun visitLogicalExpr(expr: Expr.Logical): Any? {
+        val left = evaluate(expr.left)
+        when (expr.operator.type) {
+            OR -> if (isTruthy(left)) return left
+            else -> if (!isTruthy(left)) return left
+        }
+        return evaluate(expr.right)
+    }
+
     private fun isEqual(a: Any?, b: Any?): Boolean {
         // special case to properly compare NaN!
         // https://kotlinlang.org/docs/equality.html#floating-point-numbers-equality
@@ -92,10 +101,10 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         return a == b
     }
 
-    private fun isTruthy(right: Any?) =
-        when (right) {
+    private fun isTruthy(value: Any?) =
+        when (value) {
             null -> false
-            is Boolean -> right
+            is Boolean -> value
             else -> true
         }
 
@@ -126,6 +135,33 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
     override fun visitBlockStmt(stmt: Stmt.Block) {
         executeBlock(stmt.stmts)
+    }
+
+    override fun visitIfStmt(stmt: Stmt.If) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch)
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch)
+        }
+    }
+
+    override fun visitWhileStmt(stmt: Stmt.While) {
+        while (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body)
+        }
+    }
+
+    override fun visitForStmt(stmt: Stmt.For) {
+        // pretty sure the loop var is supposed to be scoped to the loop only
+        withNewEnvironment {
+            stmt.initializer?.let { execute(it) }
+            // given that we don't support a `break` keyword, how would we ever
+            // exit a loop with no condition?
+            while (stmt.condition == null || isTruthy(evaluate(stmt.condition))) {
+                execute(stmt.body)
+                stmt.increment?.let { evaluate(it) }
+            }
+        }
     }
 
     private fun executeBlock(stmts: List<Stmt>) {
