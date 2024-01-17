@@ -9,6 +9,7 @@ interface Stmt {
         fun visitIfStmt(stmt: If): R
         fun visitWhileStmt(stmt: While): R
         fun visitForStmt(stmt: For): R
+        fun visitLoopControlStmt(stmt: LoopControl): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -68,5 +69,12 @@ interface Stmt {
     ) : Stmt {
         override fun <R> accept(visitor: Visitor<R>) =
             visitor.visitForStmt(this)
+    }
+
+    data class LoopControl(
+        val token: Token,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitLoopControlStmt(this)
     }
 }

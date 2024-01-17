@@ -147,7 +147,13 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
     override fun visitWhileStmt(stmt: Stmt.While) {
         while (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.body)
+            try {
+                execute(stmt.body)
+            } catch (_: Break) {
+                break
+            } catch (_: Continue) {
+                continue
+            }
         }
     }
 
@@ -158,9 +164,23 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
             // given that we don't support a `break` keyword, how would we ever
             // exit a loop with no condition?
             while (stmt.condition == null || isTruthy(evaluate(stmt.condition))) {
-                execute(stmt.body)
-                stmt.increment?.let { evaluate(it) }
+                try {
+                    execute(stmt.body)
+                } catch (_: Break) {
+                    break
+                } catch (_: Continue) {
+                    continue
+                } finally {
+                    stmt.increment?.let { evaluate(it) }
+                }
             }
+        }
+    }
+
+    override fun visitLoopControlStmt(stmt: Stmt.LoopControl) {
+        when (stmt.token.type) {
+            BREAK -> throw Break()
+            else -> throw Continue()
         }
     }
 
@@ -218,6 +238,9 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         }
         return s
     }
+
+    class Break : RuntimeException()
+    class Continue : RuntimeException()
 
     override fun visitCallExpr(expr: Expr.Call) = TODO("Not yet implemented")
     override fun visitGetExpr(expr: Expr.Get) = TODO("Not yet implemented")

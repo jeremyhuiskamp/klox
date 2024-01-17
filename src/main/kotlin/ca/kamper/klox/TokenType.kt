@@ -27,6 +27,8 @@ enum class TokenType {
     NUMBER,
 
     AND,
+    BREAK,
+    CONTINUE,
     CLASS,
     ELSE,
     FALSE,

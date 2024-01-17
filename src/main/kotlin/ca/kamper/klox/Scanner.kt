@@ -130,6 +130,8 @@ class Scanner(private val code: String) {
     companion object {
         private val keywords = mapOf(
             "and" to AND,
+            "break" to BREAK,
+            "continue" to CONTINUE,
             "class" to CLASS,
             "else" to ELSE,
             "false" to FALSE,

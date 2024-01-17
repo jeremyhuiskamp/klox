@@ -4,6 +4,7 @@ import ca.kamper.klox.TokenType.*
 
 class Parser(private val tokens: List<Token>) {
     private var current = 0
+    private val loopScope = LoopScope()
 
     fun parseExpr() = try {
         expression()
@@ -46,6 +47,10 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun statement(): Stmt {
+        if (match(BREAK, CONTINUE)) {
+            return loopControlStatement()
+        }
+
         if (match(FOR)) {
             return forStatement()
         }
@@ -69,6 +74,15 @@ class Parser(private val tokens: List<Token>) {
         return expressionStatement()
     }
 
+    private fun loopControlStatement(): Stmt {
+        val token = previous()
+        if (!loopScope.jumpAllowed()) {
+            error(token, "Not allowed outside loop.")
+        }
+        consume(SEMICOLON, "Expect ';' after ${token.lexeme}.")
+        return Stmt.LoopControl(token)
+    }
+
     private fun forStatement(): Stmt {
         consume(LEFT_PAREN, "Expect '(' after 'for'.")
 
@@ -88,7 +102,7 @@ class Parser(private val tokens: List<Token>) {
             else null
         consume(RIGHT_PAREN, "Expect ')' after for clauses.")
 
-        val body = statement()
+        val body = loopScope.inLoop { statement() }
 
         return Stmt.For(initializer, condition, increment, body)
     }
@@ -98,7 +112,7 @@ class Parser(private val tokens: List<Token>) {
         val condition = expression()
         consume(RIGHT_PAREN, "Expect ')' after while condition.")
 
-        val body = statement()
+        val body = loopScope.inLoop { statement() }
 
         return Stmt.While(condition, body)
     }
