@@ -2,7 +2,9 @@ package ca.kamper.klox
 
 import ca.kamper.klox.TokenType.*
 
-class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+class Interpreter(
+    private val printer: (String) -> Unit = ::println,
+) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     private var environment = Environment()
 
     override fun visitBinaryExpr(expr: Expr.Binary): Any? {
@@ -125,7 +127,7 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
     override fun visitPrintStmt(stmt: Stmt.Print) {
         val value = evaluate(stmt.expr)
-        println(stringify(value))
+        printer(stringify(value))
     }
 
     override fun visitVarStmt(stmt: Stmt.Var) {
@@ -177,6 +179,7 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
         // Alternatives to this approach:
         // - have Environment manage a stack itself!
         //   - but probably still requires push/pop commands from here?
+        //   - or give Environment the block and have it do the push/pop around the block
         // - create a new Interpreter for the new Environment
         // - pass the Environment on the stack
         val previousEnvironment = this.environment

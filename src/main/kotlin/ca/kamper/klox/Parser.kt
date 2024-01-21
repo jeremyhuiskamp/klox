@@ -2,7 +2,10 @@ package ca.kamper.klox
 
 import ca.kamper.klox.TokenType.*
 
-class Parser(private val tokens: List<Token>) {
+class Parser(
+    private val tokens: List<Token>,
+    private val reportError: (Token, String) -> Unit = ::error,
+) {
     private var current = 0
 
     fun parseExpr() = try {
@@ -283,8 +286,7 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun error(token: Token, message: String): ParseError {
-        // TODO: don't have side-effects like this!
-        ca.kamper.klox.error(token, message)
+        reportError(token, message)
         return ParseError()
     }
 

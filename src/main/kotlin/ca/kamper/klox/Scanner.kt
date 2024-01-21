@@ -2,7 +2,10 @@ package ca.kamper.klox
 
 import ca.kamper.klox.TokenType.*
 
-class Scanner(private val code: String) {
+class Scanner(
+    private val code: String,
+    private val reportError: (Int, String) -> Unit = ::error,
+) {
     private val tokens = mutableListOf<Token>()
     private var start = 0
     private var current = 0
@@ -50,7 +53,7 @@ class Scanner(private val code: String) {
                 } else if (isAlpha(c)) {
                     identifier()
                 } else {
-                    error(line, "Unexpected character.")
+                    reportError(line, "Unexpected character.")
                 }
         }
     }
@@ -95,7 +98,7 @@ class Scanner(private val code: String) {
         }
 
         if (atEnd()) {
-            error(line, "Unterminated string.")
+            reportError(line, "Unterminated string.")
             return
         }
 
