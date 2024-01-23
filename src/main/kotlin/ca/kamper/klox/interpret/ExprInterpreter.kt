@@ -100,6 +100,10 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
         return evaluate(expr.right)
     }
 
+    override fun visitLambdaExpr(expr: Expr.Lambda): Any? {
+        return LoxLambda(expr.parameters, expr.body, environment)
+    }
+
     companion object {
         private fun withDoubles(
             operator: Token,

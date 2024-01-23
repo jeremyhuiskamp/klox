@@ -70,6 +70,15 @@ class Parser(
         }
 
         if (match(FUN)) {
+            if (check(LEFT_PAREN)) {
+                // hax: we need to look at 2 tokens to know if we're
+                // looking at a function declaration or a lambda that
+                // will be ignored.  In order to re-use expressionStatement
+                // here, we need to back up, which is something we
+                // haven't needed elsewhere with this grammar.
+                current--
+                return expressionStatement()
+            }
             return declareFunctionStatement()
         }
 
@@ -92,24 +101,7 @@ class Parser(
         val name = consume(IDENTIFIER, "Expect function name.")
         consume(LEFT_PAREN, "Expect '(' after function name.")
 
-        val parameters = mutableListOf<Token>()
-        while (true) {
-            if (match(RIGHT_PAREN)) {
-                break
-            }
-            if (parameters.size >= 255) {
-                error(peek(), "Can't have more than 255 parameters.")
-            }
-            parameters.add(consume(IDENTIFIER, "Expect parameter name."))
-            if (match(COMMA)) {
-                continue
-            }
-            consume(RIGHT_PAREN, "Expect ')' after parameter list.")
-            break
-        }
-        val body = statement()
-
-        return Stmt.FunctionDeclaration(name, parameters, body)
+        return functionBody { params, body -> Stmt.FunctionDeclaration(name, params, body) }
     }
 
     private fun forStatement(): Stmt {
@@ -321,9 +313,37 @@ class Parser(
             return Expr.Grouping(expr)
         } else if (match(IDENTIFIER)) {
             return Expr.Variable(previous())
+        } else if (match(FUN)) {
+            return lambda()
         }
 
         throw error(peek(), "Expect expression.")
+    }
+
+    private fun lambda(): Expr {
+        consume(LEFT_PAREN, "Expect '(' after 'fun'.")
+        return functionBody { params, body -> Expr.Lambda(params, body) }
+    }
+
+    private fun <T> functionBody(finish: (List<Token>, Stmt) -> T): T {
+        val parameters = mutableListOf<Token>()
+        while (true) {
+            if (match(RIGHT_PAREN)) {
+                break
+            }
+            if (parameters.size >= 255) {
+                error(peek(), "Can't have more than 255 parameters.")
+            }
+            parameters.add(consume(IDENTIFIER, "Expect parameter name."))
+            if (match(COMMA)) {
+                continue
+            }
+            consume(RIGHT_PAREN, "Expect ')' after parameter list.")
+            break
+        }
+        val body = statement()
+
+        return finish(parameters, body)
     }
 
     // Seems like this could provide a better interface.  What about returning

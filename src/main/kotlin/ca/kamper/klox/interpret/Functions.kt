@@ -46,6 +46,31 @@ class LoxFunction(
     }
 }
 
+class LoxLambda(
+    val parameters: List<Token>,
+    val body: Stmt,
+    val closure: Environment,
+) : LoxCallable {
+    // TODO: deduplicate with LoxFunction?
+    override fun call(interpreter: (Environment, Stmt) -> Unit, token: Token, arguments: List<Any?>): Any? {
+        if (arguments.size != parameters.size) {
+            throw RuntimeError(token, "Lambda takes ${parameters.size} arguments.")
+        }
+
+        val environment = Environment(closure)
+        arguments.zip(parameters).forEach { (arg, param) ->
+            environment.define(param.lexeme, arg)
+        }
+
+        try {
+            interpreter(environment, body)
+            return null
+        } catch (r: Return) {
+            return r.value
+        }
+    }
+}
+
 class Return(val value: Any?) : RuntimeException(null, null, false, false)
 
 fun triggerReturn(value: Any?) {

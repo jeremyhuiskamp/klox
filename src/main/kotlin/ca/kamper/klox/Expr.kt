@@ -16,6 +16,7 @@ interface Expr {
         fun visitUnaryExpr(expr: Unary): R
         fun visitVariableExpr(expr: Variable): R
         fun visitFunctionCall(expr: FunctionCall): R
+        fun visitLambdaExpr(expr: Lambda): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -75,5 +76,12 @@ interface Expr {
         val arguments: List<Expr>,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitFunctionCall(this)
+    }
+
+    data class Lambda(
+        val parameters: List<Token>,
+        val body: Stmt,
+    ) : Expr {
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visitLambdaExpr(this)
     }
 }

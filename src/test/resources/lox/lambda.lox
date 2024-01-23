@@ -1,0 +1,23 @@
+fun thrice(fn) {
+  for (var i = 1; i <= 3; i = i + 1) {
+    fn(i);
+  }
+}
+
+thrice(fun (a) {
+  print a;
+});
+
+// this should be ignored:
+fun () {};
+
+// but this is a bit more fun:
+print fun(a) { return a; }("hello lambda");
+fun(a) { print a; }("lambda hello");
+
+// works nicely with unary operators, call syntax
+// binds stronger:
+print ! fun(a) { return a; }(false);
+
+// yikes, we don't even need braces around the body 😬
+print fun(a) return !a; (true);
