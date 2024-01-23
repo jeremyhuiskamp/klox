@@ -1,0 +1,19 @@
+fun printArg(arg) {
+    print arg;
+    return arg;
+}
+
+fun manyArgs(a, b, c, d, e, f, g, h) {
+    // do nothing
+}
+
+manyArgs(
+    printArg(1),
+    printArg(2),
+    printArg(3),
+    printArg(4),
+    printArg(5),
+    printArg(6),
+    printArg(7),
+    printArg(8),
+);

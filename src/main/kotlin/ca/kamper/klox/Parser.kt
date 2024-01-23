@@ -89,10 +89,7 @@ class Parser(
     }
 
     private fun declareFunctionStatement(): Stmt {
-        if (!match(IDENTIFIER)) {
-            throw error(previous(), "Expect function name.")
-        }
-        val name = previous()
+        val name = consume(IDENTIFIER, "Expect function name.")
         consume(LEFT_PAREN, "Expect '(' after function name.")
 
         val parameters = mutableListOf<Token>()
@@ -100,10 +97,10 @@ class Parser(
             if (match(RIGHT_PAREN)) {
                 break
             }
-            if (!match(IDENTIFIER)) {
-                throw error(peek(), "Expect identifier.")
+            if (parameters.size >= 255) {
+                error(peek(), "Can't have more than 255 parameters.")
             }
-            parameters.add(previous())
+            parameters.add(consume(IDENTIFIER, "Expect parameter name."))
             if (match(COMMA)) {
                 continue
             }
@@ -294,6 +291,9 @@ class Parser(
         while (true) {
             if (match(RIGHT_PAREN)) {
                 break
+            }
+            if (arguments.size >= 255) {
+                error(peek(), "Can't have more than 255 arguments.")
             }
             arguments.add(expression())
             if (match(COMMA)) {
