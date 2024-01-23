@@ -9,6 +9,8 @@ interface Stmt {
         fun visitIfStmt(stmt: If): R
         fun visitWhileStmt(stmt: While): R
         fun visitForStmt(stmt: For): R
+        fun visitFunctionDeclarationStmt(stmt: FunctionDeclaration): R
+        fun visitReturn(stmt: Return): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -68,5 +70,22 @@ interface Stmt {
     ) : Stmt {
         override fun <R> accept(visitor: Visitor<R>) =
             visitor.visitForStmt(this)
+    }
+
+    data class FunctionDeclaration(
+        val name: Token,
+        val parameters: List<Token>,
+        val body: Stmt,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitFunctionDeclarationStmt(this)
+    }
+
+    data class Return(
+        val token: Token,
+        val value: Expr?,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitReturn(this)
     }
 }

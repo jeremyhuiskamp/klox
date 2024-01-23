@@ -24,8 +24,8 @@ class ScriptTests {
     private fun check(scriptFile: Path) {
         val case = ScriptTestCase(scriptFile)
         val expectedOutput = getAnticipatedOutput(scriptFile)
+        case.assertNoErrors()
         if (expectedOutput != null) {
-            case.assertNoErrors()
             case.assertOutput(expectedOutput)
         }
         // TODO: error assertions?

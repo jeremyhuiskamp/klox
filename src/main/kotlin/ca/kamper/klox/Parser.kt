@@ -69,7 +69,50 @@ class Parser(
             return blockStatement()
         }
 
+        if (match(FUN)) {
+            return declareFunctionStatement()
+        }
+
+        if (match(RETURN)) {
+            return returnStmt()
+        }
+
         return expressionStatement()
+    }
+
+    private fun returnStmt(): Stmt {
+        val returnToken = previous()
+        val value =
+            if (match(SEMICOLON)) null
+            else expressionStatement().expr
+        return Stmt.Return(returnToken, value)
+    }
+
+    private fun declareFunctionStatement(): Stmt {
+        if (!match(IDENTIFIER)) {
+            throw error(previous(), "Expect function name.")
+        }
+        val name = previous()
+        consume(LEFT_PAREN, "Expect '(' after function name.")
+
+        val parameters = mutableListOf<Token>()
+        while (true) {
+            if (match(RIGHT_PAREN)) {
+                break
+            }
+            if (!match(IDENTIFIER)) {
+                throw error(peek(), "Expect identifier.")
+            }
+            parameters.add(previous())
+            if (match(COMMA)) {
+                continue
+            }
+            consume(RIGHT_PAREN, "Expect ')' after parameter list.")
+            break
+        }
+        val body = statement()
+
+        return Stmt.FunctionDeclaration(name, parameters, body)
     }
 
     private fun forStatement(): Stmt {
@@ -234,7 +277,32 @@ class Parser(
             val operator = previous()
             return Expr.Unary(operator, unary())
         }
-        return primary()
+        return functionCall()
+    }
+
+    private fun functionCall(): Expr {
+        var expr = primary()
+        while (match(LEFT_PAREN)) {
+            expr = finishFunctionCall(expr)
+        }
+        return expr
+    }
+
+    private fun finishFunctionCall(expr: Expr): Expr {
+        val arguments = mutableListOf<Expr>()
+
+        while (true) {
+            if (match(RIGHT_PAREN)) {
+                break
+            }
+            arguments.add(expression())
+            if (match(COMMA)) {
+                continue
+            }
+            consume(RIGHT_PAREN, "Expect ')' to close function call.")
+            break
+        }
+        return Expr.FunctionCall(expr, previous(), arguments)
     }
 
     private fun primary(): Expr {

@@ -10,18 +10,12 @@ interface Expr {
     interface Visitor<R> {
         fun visitAssignExpr(expr: Assign): R
         fun visitBinaryExpr(expr: Binary): R
-        fun visitCallExpr(expr: Call): R
-        fun visitGetExpr(expr: Get): R
         fun visitGroupingExpr(expr: Grouping): R
         fun visitLiteralExpr(expr: Literal): R
-
         fun visitLogicalExpr(expr: Logical): R
-
-        //        fun visitSetExpr(expr: Set<*>): R
-//        fun visitSuperExpr(expr: Super): R
-//        fun visitThisExpr(expr: This): R
         fun visitUnaryExpr(expr: Unary): R
         fun visitVariableExpr(expr: Variable): R
+        fun visitFunctionCall(expr: FunctionCall): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -39,21 +33,6 @@ interface Expr {
         val right: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitBinaryExpr(this)
-    }
-
-    data class Call(
-        val callee: Expr,
-        val paren: Token,
-        val arguments: List<Expr>,
-    ) : Expr {
-        override fun <R> accept(visitor: Visitor<R>): R = visitor.visitCallExpr(this)
-    }
-
-    data class Get(
-        val obj: Expr,
-        val name: Token,
-    ) : Expr {
-        override fun <R> accept(visitor: Visitor<R>): R = visitor.visitGetExpr(this)
     }
 
     data class Grouping(
@@ -88,5 +67,13 @@ interface Expr {
         val right: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitLogicalExpr(this)
+    }
+
+    data class FunctionCall(
+        val function: Expr,
+        val token: Token,
+        val arguments: List<Expr>,
+    ) : Expr {
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visitFunctionCall(this)
     }
 }

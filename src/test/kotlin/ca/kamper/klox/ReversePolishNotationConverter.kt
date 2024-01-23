@@ -45,15 +45,11 @@ class ReversePolishNotationConverter : Expr.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitFunctionCall(expr: Expr.FunctionCall): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitAssignExpr(expr: Expr.Assign): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun visitCallExpr(expr: Expr.Call): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun visitGetExpr(expr: Expr.Get): String {
         TODO("Not yet implemented")
     }
 }

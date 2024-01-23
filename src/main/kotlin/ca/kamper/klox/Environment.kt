@@ -1,5 +1,8 @@
 package ca.kamper.klox
 
+import ca.kamper.klox.interpret.ClockGlobal
+import ca.kamper.klox.interpret.ToStringGlobal
+
 class Environment(private val enclosing: Environment? = null) {
     private val values = mutableMapOf<String, Any?>()
 
@@ -31,5 +34,13 @@ class Environment(private val enclosing: Environment? = null) {
             name,
             "Undefined variable '${name.lexeme}'.",
         )
+    }
+
+    companion object {
+        fun global(): Environment =
+            Environment().apply {
+                define("clock", ClockGlobal)
+                define("toString", ToStringGlobal)
+            }
     }
 }

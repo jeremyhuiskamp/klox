@@ -8,14 +8,6 @@ class AstPrinter : Expr.Visitor<String> {
     override fun visitBinaryExpr(expr: Expr.Binary) =
         parenthesize(expr.operator.lexeme, expr.left, expr.right)
 
-    override fun visitCallExpr(expr: Expr.Call): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun visitGetExpr(expr: Expr.Get): String {
-        TODO("Not yet implemented")
-    }
-
     override fun visitGroupingExpr(expr: Expr.Grouping) =
         parenthesize("group", expr.expression)
 
@@ -32,6 +24,10 @@ class AstPrinter : Expr.Visitor<String> {
 
     override fun visitVariableExpr(expr: Expr.Variable): String {
         return parenthesize("var", expr)
+    }
+
+    override fun visitFunctionCall(expr: Expr.FunctionCall): String {
+        TODO("Not yet implemented")
     }
 
     private fun parenthesize(name: String, vararg exprs: Expr) =

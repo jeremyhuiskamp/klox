@@ -1,0 +1,11 @@
+var c = clock();
+var c2 = clock();
+if (c > c2) {
+    print "Hmm, got some questionable clock values...";
+    print c;
+    print c2;
+}
+print (c - c);
+
+// demonstrate a built-in call that takes parameters:
+print "a = " + toString(1);

@@ -1,0 +1,14 @@
+fun add(a, b) {
+    return a + b;
+}
+print add(1, 2);
+
+fun adder(a) {
+    fun returnMe(b) {
+        return a + b;
+    }
+    return returnMe;
+}
+var plus2 = adder(2);
+print plus2(2);
+print adder(3)(3);
