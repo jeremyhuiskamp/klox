@@ -6,7 +6,8 @@ class Parser(
     private val tokens: List<Token>,
     private val reportError: (Token, String) -> Unit = ::error,
 ) {
-    private var current = 0
+    private var currentToken = 0
+    private var nestedFunctionCount = 0
 
     fun parseExpr() = try {
         expression()
@@ -82,6 +83,9 @@ class Parser(
 
     private fun returnStmt(): Stmt {
         val returnToken = previous()
+        if (nestedFunctionCount < 1) {
+            error(returnToken, "Cannot 'return' outside of function body.")
+        }
         val value =
             if (match(SEMICOLON)) null
             else expressionStatement().expr
@@ -107,7 +111,12 @@ class Parser(
             consume(RIGHT_PAREN, "Expect ')' after parameter list.")
             break
         }
-        val body = statement()
+        val body = try {
+            nestedFunctionCount++
+            statement()
+        } finally {
+            nestedFunctionCount--
+        }
 
         return Stmt.FunctionDeclaration(name, parameters, body)
     }
@@ -344,7 +353,7 @@ class Parser(
     }
 
     private fun advance(): Token {
-        if (!isAtEnd()) current++
+        if (!isAtEnd()) currentToken++
         return previous()
     }
 
@@ -361,8 +370,8 @@ class Parser(
     class ParseError : Exception()
 
     private fun isAtEnd(): Boolean = peek().type == EOF
-    private fun peek(): Token = tokens[current]
-    private fun previous(): Token = tokens[current - 1]
+    private fun peek(): Token = tokens[currentToken]
+    private fun previous(): Token = tokens[currentToken - 1]
 
     private fun synchronize() {
         advance()

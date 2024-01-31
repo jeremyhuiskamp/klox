@@ -1,6 +1,7 @@
 fun add(a, b) {
     return a + b;
 }
+//print: 3
 print add(1, 2);
 
 fun adder(a) {
@@ -10,5 +11,7 @@ fun adder(a) {
     return returnMe;
 }
 var plus2 = adder(2);
+//print: 4
 print plus2(2);
+//print: 6
 print adder(3)(3);

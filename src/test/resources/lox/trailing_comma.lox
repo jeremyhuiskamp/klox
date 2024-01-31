@@ -5,6 +5,7 @@ fun add(
     return a + b;
 }
 
+//print: 3
 print add(
   1,
   2,

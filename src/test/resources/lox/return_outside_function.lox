@@ -1,0 +1,3 @@
+print "here";
+return 42; //error: no return outside function
+print "should not be here";

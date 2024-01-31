@@ -4,7 +4,12 @@ var a = "global";
         print a;
     }
 
+    //print: global
     showA();
+
     var a = "local";
+
+    // NB: this will change when we fix binding in the next chapter:
+    //print: local
     showA();
 }

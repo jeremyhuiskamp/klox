@@ -6,4 +6,26 @@ fun fib(n) {
 for (var i = 0; i < 20; i = i + 1) {
   print fib(i);
 }
-// runs in ~95s where the kotlin version is ~2-3ms
+
+//print: 0
+//print: 1
+//print: 1
+//print: 2
+//print: 3
+//print: 5
+//print: 8
+//print: 13
+//print: 21
+//print: 34
+//print: 55
+//print: 89
+//print: 144
+//print: 233
+//print: 377
+//print: 610
+//print: 987
+//print: 1597
+//print: 2584
+//print: 4181
+
+// runs in ~95ms where the kotlin version is ~2-3ms

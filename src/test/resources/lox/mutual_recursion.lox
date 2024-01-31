@@ -6,7 +6,11 @@ fun isEven(n) {
     if (n <= 0) return true;
     return isOdd(n-1);
 }
+//print: true
 print isOdd(5);
+//print: false
 print isEven(5);
+//print: false
 print isOdd(10);
+//print: true
 print isEven(10);

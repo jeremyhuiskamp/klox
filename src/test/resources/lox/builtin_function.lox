@@ -6,6 +6,8 @@ if (c > c2) {
     print c2;
 }
 print (c - c);
+//print: 0
 
 // demonstrate a built-in call that takes parameters:
 print "a = " + toString(1);
+//print: a = 1

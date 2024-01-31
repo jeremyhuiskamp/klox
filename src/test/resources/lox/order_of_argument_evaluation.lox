@@ -8,12 +8,12 @@ fun manyArgs(a, b, c, d, e, f, g, h) {
 }
 
 manyArgs(
-    printArg(1),
-    printArg(2),
-    printArg(3),
-    printArg(4),
-    printArg(5),
-    printArg(6),
-    printArg(7),
-    printArg(8),
+    printArg(1), //print: 1
+    printArg(2), //print: 2
+    printArg(3), //print: 3
+    printArg(4), //print: 4
+    printArg(5), //print: 5
+    printArg(6), //print: 6
+    printArg(7), //print: 7
+    printArg(8), //print: 8
 );

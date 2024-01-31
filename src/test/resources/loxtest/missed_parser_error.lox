@@ -1,0 +1,2 @@
+// We should be expecting an error about the missing semicolon:
+print "hai"

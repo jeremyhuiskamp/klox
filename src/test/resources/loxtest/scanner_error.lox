@@ -1,0 +1,8 @@
+// This is a bit weird from a parsing perspective.
+// The scanner will certainly report an error, but
+// because the string is unterminated, the comment
+// indicating the issue is not technically there.
+// Currently the code that looks for expected errors
+// doesn't understand strings, so it does see the
+// comment:
+"unterminated string //error: unterminated string

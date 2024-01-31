@@ -4,10 +4,8 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
-import kotlin.io.path.readLines
 
 class ScriptTests {
     @TestFactory
@@ -23,19 +21,7 @@ class ScriptTests {
 
     private fun check(scriptFile: Path) {
         val case = ScriptTestCase(scriptFile)
-        val expectedOutput = getAnticipatedOutput(scriptFile)
-        case.assertNoErrors()
-        if (expectedOutput != null) {
-            case.assertOutput(expectedOutput)
-        }
-        // TODO: error assertions?
-    }
-
-    private fun getAnticipatedOutput(scriptFile: Path): List<String>? {
-        val outFile = scriptFile.resolveSibling(scriptFile.name + ".out")
-        if (outFile.exists()) {
-            return outFile.readLines()
-        }
-        return null
+        val expectations = ScriptExpectations(scriptFile)
+        expectations.check(case)
     }
 }

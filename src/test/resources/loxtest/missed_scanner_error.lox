@@ -1,0 +1,2 @@
+// A proper test would specify an error on the following line, but this one doesn't:
+"unterminated string
