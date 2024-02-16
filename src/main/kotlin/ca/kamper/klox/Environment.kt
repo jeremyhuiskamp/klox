@@ -36,6 +36,24 @@ class Environment(private val enclosing: Environment? = null) {
         )
     }
 
+    fun getAt(distance: Int, name: Token): Any? =
+        // go directly to `values` because we shouldn't need to look into parents:
+        requireAncestor(distance, name).values[name.lexeme]
+
+    private fun requireAncestor(distance: Int, name: Token): Environment =
+        ancestor(distance) ?: throw RuntimeError(
+            name,
+            "Compiler error: reference non-existent ancestor environment $distance levels higher"
+        )
+
+    private fun ancestor(distance: Int): Environment? =
+        if (distance <= 0) this
+        else enclosing?.ancestor(distance - 1)
+
+    fun assignAt(distance: Int, name: Token, value: Any?) {
+        requireAncestor(distance, name).values[name.lexeme] = value
+    }
+
     companion object {
         fun global(): Environment =
             Environment().apply {

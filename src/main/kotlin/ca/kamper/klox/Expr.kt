@@ -20,14 +20,17 @@ interface Expr {
 
     fun <R> accept(visitor: Visitor<R>): R
 
-    data class Assign(
+    // Implementations should *not* be data classes because we use
+    // them as map keys and want them to be unique identity, not value.
+
+    class Assign(
         val name: Token,
         val value: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitAssignExpr(this)
     }
 
-    data class Binary(
+    class Binary(
         val left: Expr,
         val operator: Token,
         val right: Expr,
@@ -35,33 +38,33 @@ interface Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitBinaryExpr(this)
     }
 
-    data class Grouping(
+    class Grouping(
         val expression: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitGroupingExpr(this)
     }
 
-    data class Literal(
+    class Literal(
         val value: Any?,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitLiteralExpr(this)
     }
 
-    data class Unary(
+    class Unary(
         val operator: Token,
         val right: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitUnaryExpr(this)
     }
 
-    data class Variable(
+    class Variable(
         // only TokenType.IDENTIFIER would be legal here; could we enforce that?
         val name: Token,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitVariableExpr(this)
     }
 
-    data class Logical(
+    class Logical(
         val left: Expr,
         val operator: Token,
         val right: Expr,
@@ -69,7 +72,7 @@ interface Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitLogicalExpr(this)
     }
 
-    data class FunctionCall(
+    class FunctionCall(
         val function: Expr,
         val token: Token,
         val arguments: List<Expr>,

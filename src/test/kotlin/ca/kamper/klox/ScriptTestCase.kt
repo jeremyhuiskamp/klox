@@ -23,7 +23,7 @@ class ScriptTestCase(private val scriptFile: Path) {
         if (!scriptHadErrors()) {
             val interpreter = Interpreter(::capturePrint)
             try {
-                interpreter.interpret(tokens, ::interpreterError)
+                interpreter.interpret(tokens, ::parserError, ::interpreterError)
             } catch (e: Exception) {
                 addError(0, "unexpected exception: $e")
             }

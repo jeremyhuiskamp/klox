@@ -1,0 +1,30 @@
+// This is sort of an obscure implementation detail test.
+// We bind variable references to declarations by mapping
+// the reference expressions to a number representing how far up
+// the environment map we need to look.  This requires the
+// expression types to be unique map keys, even when they
+// have the same data.  For this, we try putting two expressions
+// on the same line and make sure they can still refer to
+// different depths.
+
+// first, all formatted nicely:
+fun doTheTest() {
+    var x = "good";
+    {
+        print x; //print: good
+        {
+            print x; //print: good
+        }
+    }
+}
+
+doTheTest();
+
+// now, crunched into one line:
+fun doTheTest2() {
+    var x = "good"; { print x; { print x; } }
+    //print: good
+    //print: good
+}
+
+doTheTest2();

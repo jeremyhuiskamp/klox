@@ -1,0 +1,7 @@
+// semantic analysis should short-circuit execution
+print "don't print this";
+
+fun bad() {
+    var a = "first";
+    var a = "second"; //error: a already declared
+}

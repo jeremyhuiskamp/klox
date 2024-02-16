@@ -14,7 +14,7 @@ class ScriptTests {
     )
         .listDirectoryEntries("*.lox")
         .map { path ->
-            DynamicTest.dynamicTest(path.name) {
+            DynamicTest.dynamicTest(path.name, path.toUri()) {
                 check(path)
             }
         }

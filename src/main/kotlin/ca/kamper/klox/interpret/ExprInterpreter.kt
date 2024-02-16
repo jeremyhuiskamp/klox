@@ -3,9 +3,13 @@ package ca.kamper.klox.interpret
 import ca.kamper.klox.*
 
 abstract class ExprInterpreter : Expr.Visitor<Any?> {
+    // TODO: there are too many hooks back into Interpreter here
+    // need a better abstraction
+    abstract val globals: Environment
     abstract val environment: Environment
     abstract fun evaluate(expr: Expr): Any?
     abstract fun execute(environment: Environment, stmt: Stmt)
+    abstract val locals: Map<Expr, Int>
 
     override fun visitBinaryExpr(expr: Expr.Binary): Any? {
         val left = evaluate(expr.left)
@@ -74,7 +78,16 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
         }
     }
 
-    override fun visitVariableExpr(expr: Expr.Variable) = environment[expr.name]
+    override fun visitVariableExpr(expr: Expr.Variable) = lookupVariable(expr.name, expr)
+
+    private fun lookupVariable(name: Token, expr: Expr): Any? {
+        val distance = locals[expr]
+        if (distance != null) {
+            return environment.getAt(distance, name)
+        } else {
+            return globals.get(name)
+        }
+    }
 
     override fun visitFunctionCall(expr: Expr.FunctionCall): Any? {
         val callable = evaluate(expr.function)
@@ -87,7 +100,12 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
 
     override fun visitAssignExpr(expr: Expr.Assign): Any? {
         val value = evaluate(expr.value)
-        environment.assign(expr.name, value)
+        val distance = locals[expr]
+        if (distance != null) {
+            environment.assignAt(distance, expr.name, value)
+        } else {
+            globals.assign(expr.name, value)
+        }
         return value
     }
 

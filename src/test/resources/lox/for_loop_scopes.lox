@@ -2,7 +2,8 @@ var a = "global";
 
 // loop var shouldn't interfere with global
 for (var a = 0; a < 10; a = a + 1) {
-    var a = a; // should not interfere with the loop
+    var tmp = a;
+    var a = tmp; // should not interfere with the loop
     a = 0;
 }
 

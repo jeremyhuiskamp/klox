@@ -6,9 +6,18 @@ import ca.kamper.klox.interpret.StmtInterpreter
 class Interpreter(
     private val printer: (String) -> Unit = ::println,
 ) {
-    private var environment = Environment.global()
+    private val globals = Environment.global()
+    private var environment = globals
+    private val locals = mutableMapOf<Expr, Int>()
+
+    internal fun resolve(expr: Expr, depth: Int) {
+        locals[expr] = depth
+    }
 
     private val exprInterpreter = object : ExprInterpreter() {
+        override val globals: Environment
+            get() = this@Interpreter.globals
+
         override val environment: Environment
             get() = this@Interpreter.environment
 
@@ -20,6 +29,9 @@ class Interpreter(
                 stmt.accept(stmtInterpreter)
             }
         }
+
+        override val locals: Map<Expr, Int>
+            get() = this@Interpreter.locals
     }
 
     private val stmtInterpreter = object : StmtInterpreter(printer) {
@@ -46,11 +58,31 @@ class Interpreter(
 
     fun evaluate(expr: Expr): Any? = expr.accept(exprInterpreter)
 
-    fun interpret(stmts: List<Stmt>, report: (RuntimeError) -> Unit) {
+    fun interpret(
+        stmts: List<Stmt>,
+        reportStaticError: (Token, String) -> Unit = ::error,
+        reportRuntimeError: (RuntimeError) -> Unit = ::runtimeError,
+    ) {
+        val resolutionError = resolve(stmts, reportStaticError)
+        if (resolutionError) return
+
         try {
             stmts.forEach { it.accept(this.stmtInterpreter) }
         } catch (e: RuntimeError) {
-            report(e)
+            reportRuntimeError(e)
         }
+    }
+
+    private fun resolve(
+        stmts: List<Stmt>,
+        reportStaticError: (Token, String) -> Unit,
+    ): Boolean {
+        var errors = false
+        val doReport = { token: Token, msg: String ->
+            errors = true
+            reportStaticError(token, msg)
+        }
+        Resolver(doReport, ::resolve).resolve(stmts)
+        return errors
     }
 }

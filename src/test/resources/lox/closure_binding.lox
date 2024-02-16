@@ -9,7 +9,6 @@ var a = "global";
 
     var a = "local";
 
-    // NB: this will change when we fix binding in the next chapter:
-    //print: local
+    //print: global
     showA();
 }
