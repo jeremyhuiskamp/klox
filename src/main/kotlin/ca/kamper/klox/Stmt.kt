@@ -11,6 +11,7 @@ interface Stmt {
         fun visitForStmt(stmt: For): R
         fun visitFunctionDeclarationStmt(stmt: FunctionDeclaration): R
         fun visitReturn(stmt: Return): R
+        fun visitClassStmt(stmt: Class): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -86,5 +87,14 @@ interface Stmt {
     ) : Stmt {
         override fun <R> accept(visitor: Visitor<R>) =
             visitor.visitReturn(this)
+    }
+
+    data class Class(
+        val name: Token,
+        val superName: Expr?, // must be Expr.Variable?
+        val methods: List<FunctionDeclaration>,
+    ) : Stmt {
+        override fun <R> accept(visitor: Visitor<R>) =
+            visitor.visitClassStmt(this)
     }
 }

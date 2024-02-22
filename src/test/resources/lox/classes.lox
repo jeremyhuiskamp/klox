@@ -1,0 +1,120 @@
+var vip = "your majesty";
+
+class Breakfast {
+  cook() {
+    print "Eggs a-fryin'!";
+  }
+
+  serve(who) {
+    print "Enjoy your breakfast, " + who + ".";
+  }
+
+  serveVip() {
+    // test resolving variables outside the class:
+    print "Enjoy your breakfast, " + vip + ".";
+  }
+}
+
+print Breakfast; //print: class Breakfast
+var b = Breakfast();
+print b; //print: object Breakfast{}
+
+b.cook(); //print: Eggs a-fryin'!
+b.serve("me"); //print: Enjoy your breakfast, me.
+
+b.serveVip(); //print: Enjoy your breakfast, your majesty.
+
+class PrintsSelf {
+  doIt() {
+    print this;
+  }
+  indirectlyDoIt() {
+    this.doIt();
+  }
+}
+
+var selfPrinter = PrintsSelf();
+//print: object PrintsSelf{}
+selfPrinter.doIt();
+//print: object PrintsSelf{}
+selfPrinter.indirectlyDoIt();
+
+class PrintsInInit {
+  init() {
+      print "hai from init";
+  }
+}
+
+//print: hai from init
+PrintsInInit();
+
+// TODO: should be illegal to explicitly call init:
+// PrintsInInit().init()
+// TODO: it would be illegal to have a return statement in init()
+
+class RemembersProperty {
+  init(foo) {
+    this.foo = foo;
+  }
+  printFoo() {
+    print this.foo;
+  }
+}
+
+//print: bar
+RemembersProperty("bar").printFoo();
+
+class MethodChainer {
+  setFoo(foo) {
+    this.foo = foo;
+    return this;
+  }
+  setBar(bar) {
+    this.bar = bar;
+    return this;
+  }
+}
+var chainer = MethodChainer().setFoo("foobar").setBar("barfoo");
+print chainer.foo; //print: foobar
+print chainer.bar; //print: barfoo
+
+class List {
+  init(value, tail) {
+    this.value = value;
+    this.tail = tail;
+  }
+  cons(value) {
+    return List(value, this);
+  }
+  car() {
+    return this.value;
+  }
+  cdr() {
+    return this.tail;
+  }
+  printList() {
+    print this.value;
+    if (this.tail != nil) {
+      this.tail.printList();
+    }
+  }
+}
+
+var list = List("one", nil).cons("two").cons("three");
+list.printList();
+//print: three
+//print: two
+//print: one
+list.cdr().printList();
+//print: two
+//print: one
+print list.car();
+//print: three
+print list.value;
+//print: three
+
+// next steps:
+// - not sure if any major features are missing
+// - maybe should just try to write some interesting thing in lox and see how it works
+// - can add some error cases
+// - try classes nested in functions

@@ -16,15 +16,28 @@ interface Expr {
         fun visitUnaryExpr(expr: Unary): R
         fun visitVariableExpr(expr: Variable): R
         fun visitFunctionCall(expr: FunctionCall): R
+        fun visitDotExpr(expr: Dot): R
+        fun visitThisExpr(expr: This): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
+
+
+    interface AssignmentTarget : Expr {
+        interface Visitor<R> {
+            fun visitVariableExpr(variable: Variable): R
+            fun visitDotExpr(dot: Dot): R
+        }
+
+        fun <R> accept(visitor: Visitor<R>): R
+    }
 
     // Implementations should *not* be data classes because we use
     // them as map keys and want them to be unique identity, not value.
 
     class Assign(
-        val name: Token,
+        val name: Token, // could we have AssignmentTarget provide this?
+        val target: AssignmentTarget,
         val value: Expr,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>): R = visitor.visitAssignExpr(this)
@@ -60,7 +73,10 @@ interface Expr {
     class Variable(
         // only TokenType.IDENTIFIER would be legal here; could we enforce that?
         val name: Token,
-    ) : Expr {
+    ) : Expr, AssignmentTarget {
+        override fun <R> accept(visitor: AssignmentTarget.Visitor<R>) =
+            visitor.visitVariableExpr(this)
+
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitVariableExpr(this)
     }
 
@@ -78,5 +94,20 @@ interface Expr {
         val arguments: List<Expr>,
     ) : Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitFunctionCall(this)
+    }
+
+    class Dot(
+        val left: Expr,
+        val right: Token, // must be an IDENTIFIER
+    ) : Expr, AssignmentTarget {
+        override fun <R> accept(visitor: AssignmentTarget.Visitor<R>) =
+            visitor.visitDotExpr(this)
+
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visitDotExpr(this)
+    }
+
+    // should this also support `super`?
+    class This(val token: Token) : Expr {
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visitThisExpr(this)
     }
 }

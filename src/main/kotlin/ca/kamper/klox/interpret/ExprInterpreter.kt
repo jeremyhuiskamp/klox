@@ -100,12 +100,33 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
 
     override fun visitAssignExpr(expr: Expr.Assign): Any? {
         val value = evaluate(expr.value)
-        val distance = locals[expr]
-        if (distance != null) {
-            environment.assignAt(distance, expr.name, value)
-        } else {
-            globals.assign(expr.name, value)
-        }
+
+        // TODO: the allocation of an object here seems excessive
+        // For the small number of target types, it might be faster to
+        // seal the interface and use a when block?
+        // This would also make it easier to avoid conflicts with
+        // the multiple levels of named expressions.
+        expr.target.accept(object : Expr.AssignmentTarget.Visitor<Unit> {
+            override fun visitVariableExpr(variable: Expr.Variable) {
+                val distance = locals[variable]
+                if (distance != null) {
+                    environment.assignAt(distance, expr.name, value)
+                } else {
+                    globals.assign(expr.name, value)
+                }
+            }
+
+            override fun visitDotExpr(dot: Expr.Dot) {
+                val targetObject = evaluate(dot.left)
+                if (targetObject !is LoxObject) {
+                    // would be helpful to log what the targetObject actually is?
+                    throw RuntimeError(expr.name, "Cannot assign property to non-object")
+                }
+
+                targetObject[dot.right] = value
+            }
+        })
+
         return value
     }
 
@@ -117,6 +138,16 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
         }
         return evaluate(expr.right)
     }
+
+    override fun visitDotExpr(expr: Expr.Dot): Any? {
+        val left = evaluate(expr.left)
+                as? LoxObject
+            ?: throw RuntimeError(expr.right, "Can only access members of a class")
+
+        return left[expr.right]
+    }
+
+    override fun visitThisExpr(expr: Expr.This) = lookupVariable(expr.token, expr)
 
     companion object {
         private fun withDoubles(

@@ -44,6 +44,18 @@ class LoxFunction(
             return r.value
         }
     }
+
+    fun bindTo(obj: LoxObject): LoxFunction {
+        // This is sort of python-style: the class members are not
+        // in scope, but must be references through this/self.
+        // Java-style would allow that, but also pump all the class
+        // members into the environment.  But that might depend on
+        // static declaration of the members?  Otherwise our resolver
+        // won't know what to do with references.
+        val classEnv = Environment(closure)
+        classEnv.define("this", obj)
+        return LoxFunction(name, parameters, body, classEnv)
+    }
 }
 
 class Return(val value: Any?) : RuntimeException(null, null, false, false) {

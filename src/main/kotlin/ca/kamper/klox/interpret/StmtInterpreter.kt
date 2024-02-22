@@ -74,4 +74,12 @@ abstract class StmtInterpreter(
         val value = stmt.value?.let { evaluate(it) }
         Return.trigger(value)
     }
+
+    override fun visitClassStmt(stmt: Stmt.Class) {
+        val methods = stmt.methods.map {
+            // interesting: a method is also a closure?!
+            LoxFunction(it.name, it.parameters, it.body, environment)
+        }
+        environment.define(stmt.name.lexeme, LoxClass(stmt.name.lexeme, methods))
+    }
 }

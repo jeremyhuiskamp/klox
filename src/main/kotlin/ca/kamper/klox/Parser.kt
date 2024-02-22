@@ -78,7 +78,27 @@ class Parser(
             return returnStmt()
         }
 
+        if (match(CLASS)) {
+            return classStmt()
+        }
+
         return expressionStatement()
+    }
+
+    private fun classStmt(): Stmt {
+        val name = consume(IDENTIFIER, "Expect class name.")
+        // if check(<) get super-class
+
+        consume(LEFT_BRACE, "Expect '{' to open class.")
+
+        val methods = mutableListOf<Stmt.FunctionDeclaration>()
+        while (true) {
+            if (match(RIGHT_BRACE)) break
+
+            methods.add(declareFunctionStatement())
+        }
+
+        return Stmt.Class(name, null, methods)
     }
 
     private fun returnStmt(): Stmt {
@@ -92,7 +112,7 @@ class Parser(
         return Stmt.Return(returnToken, value)
     }
 
-    private fun declareFunctionStatement(): Stmt {
+    private fun declareFunctionStatement(): Stmt.FunctionDeclaration {
         val name = consume(IDENTIFIER, "Expect function name.")
         consume(LEFT_PAREN, "Expect '(' after function name.")
 
@@ -203,7 +223,12 @@ class Parser(
 
             if (expr is Expr.Variable) {
                 val name = expr.name
-                return Expr.Assign(name, value)
+                return Expr.Assign(name, expr, value)
+            } else if (expr is Expr.Dot) {
+                // expr.right doesn't seem like the right name here
+                // but it's probably the only thing we have that is
+                // guaranteed to be an identifier?
+                return Expr.Assign(expr.right, expr, value)
             }
 
             error(equals, "Invalid assignment target.")
@@ -283,14 +308,33 @@ class Parser(
             val operator = previous()
             return Expr.Unary(operator, unary())
         }
-        return functionCall()
+        return functionCallOrDotChain()
     }
 
-    private fun functionCall(): Expr {
+    private fun functionCallOrDotChain(): Expr {
         var expr = primary()
-        while (match(LEFT_PAREN)) {
-            expr = finishFunctionCall(expr)
+
+        // This has implications on how we are able to handle lookups
+        // of properties and methods on classes in the interpreter.
+        // foo.bar() gets parsed as (foo.bar)(), which means we are
+        // going to lookup `bar` from `foo` before we know if we're
+        // expecting a property or a method.  But lookup might need
+        // to differ for the two: method lookups go up a chain of
+        // parent classes due to overrides, while properties probably
+        // all sit in one bag on the instance.  The details aren't
+        // important for the parser here, except to note that we've
+        // made it harder to know which one we're looking for.
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = finishFunctionCall(expr)
+            } else if (match(DOT)) {
+                val name = consume(IDENTIFIER, "Expect identifier after '.'.")
+                expr = Expr.Dot(expr, name)
+            } else {
+                break
+            }
         }
+
         return expr
     }
 
@@ -330,6 +374,8 @@ class Parser(
             return Expr.Grouping(expr)
         } else if (match(IDENTIFIER)) {
             return Expr.Variable(previous())
+        } else if (match(THIS)) {
+            return Expr.This(previous())
         }
 
         throw error(peek(), "Expect expression.")

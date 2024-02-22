@@ -30,6 +30,14 @@ class AstPrinter : Expr.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitDotExpr(expr: Expr.Dot): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitThisExpr(expr: Expr.This): String {
+        TODO("Not yet implemented")
+    }
+
     private fun parenthesize(name: String, vararg exprs: Expr) =
         StringBuilder("($name")
             .let { builder ->

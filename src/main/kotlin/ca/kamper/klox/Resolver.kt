@@ -17,7 +17,7 @@ class Resolver(
 
     override fun visitAssignExpr(expr: Expr.Assign) {
         resolve(expr.value)
-        resolveLocal(expr, expr.name)
+        resolve(expr.target)
     }
 
     override fun visitBinaryExpr(expr: Expr.Binary) {
@@ -62,6 +62,20 @@ class Resolver(
     override fun visitFunctionCall(expr: Expr.FunctionCall) {
         resolve(expr.function)
         expr.arguments.forEach { resolve(it) }
+    }
+
+    override fun visitDotExpr(expr: Expr.Dot) {
+        resolve(expr.left)
+        // Anything on the right doesn't need to be resolved because it's a property of
+        // the thing on the left?
+    }
+
+    override fun visitThisExpr(expr: Expr.This) {
+        // Requires the reference to be within the scope of a class definition.
+        // This wouldn't work for, eg, javascript, where a `this` reference in
+        // a free-standing function can be rebound to an object at runtime, but
+        // falls through to the global scope if there is no object binding.
+        resolveLocal(expr, expr.token)
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
@@ -170,5 +184,15 @@ class Resolver(
 
     override fun visitReturn(stmt: Stmt.Return) {
         resolve(stmt.value)
+    }
+
+    override fun visitClassStmt(stmt: Stmt.Class) {
+        stmt.superName?.let { resolve(it) }
+        inNewScope {
+            val thisToken = stmt.name.copy(lexeme = "this")
+            declare(thisToken)
+            define(thisToken)
+            stmt.methods.forEach { resolveFunction(it) }
+        }
     }
 }
