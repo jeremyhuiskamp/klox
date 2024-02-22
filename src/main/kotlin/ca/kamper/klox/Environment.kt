@@ -28,7 +28,7 @@ class Environment(private val enclosing: Environment? = null) {
             return values[name.lexeme]
         }
         if (enclosing != null) {
-            return enclosing.get(name)
+            return enclosing[name]
         }
         throw RuntimeError(
             name,

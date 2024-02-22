@@ -2,8 +2,10 @@ package ca.kamper.klox
 
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertTimeoutPreemptively
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Duration.ofSeconds
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
@@ -15,7 +17,10 @@ class ScriptTests {
         .listDirectoryEntries("*.lox")
         .map { path ->
             DynamicTest.dynamicTest(path.name, path.toUri()) {
-                check(path)
+                // bugs in the interpreter can lead to infinite loops:
+                assertTimeoutPreemptively(ofSeconds(1)) {
+                    check(path)
+                }
             }
         }
 

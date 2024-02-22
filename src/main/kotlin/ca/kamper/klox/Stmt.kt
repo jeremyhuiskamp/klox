@@ -59,7 +59,6 @@ interface Stmt {
     ) : Stmt {
         override fun <R> accept(visitor: Visitor<R>) =
             visitor.visitWhileStmt(this)
-
     }
 
     data class For(

@@ -69,7 +69,9 @@ abstract class StmtInterpreter(
     }
 
     override fun visitReturn(stmt: Stmt.Return) {
+        // Might be interesting to differentiate between returning
+        // no value and returning a lox null?
         val value = stmt.value?.let { evaluate(it) }
-        triggerReturn(value)
+        Return.trigger(value)
     }
 }

@@ -82,10 +82,10 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
 
     private fun lookupVariable(name: Token, expr: Expr): Any? {
         val distance = locals[expr]
-        if (distance != null) {
-            return environment.getAt(distance, name)
+        return if (distance != null) {
+            environment.getAt(distance, name)
         } else {
-            return globals.get(name)
+            globals[name]
         }
     }
 

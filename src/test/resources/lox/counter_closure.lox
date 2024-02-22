@@ -12,3 +12,12 @@ var counter = makeCounter();
 counter();
 //print: 2
 counter();
+
+// make sure two counters don't interfere with each other:
+var counter2 = makeCounter();
+//print: 1
+counter2();
+//print: 3
+counter();
+//print: 2
+counter2();

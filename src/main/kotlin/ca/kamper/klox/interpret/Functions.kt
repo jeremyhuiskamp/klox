@@ -46,8 +46,10 @@ class LoxFunction(
     }
 }
 
-class Return(val value: Any?) : RuntimeException(null, null, false, false)
-
-fun triggerReturn(value: Any?) {
-    throw Return(value)
+class Return(val value: Any?) : RuntimeException(null, null, false, false) {
+    companion object {
+        fun trigger(value: Any?) {
+            throw Return(value)
+        }
+    }
 }
