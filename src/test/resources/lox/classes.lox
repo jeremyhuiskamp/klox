@@ -24,6 +24,8 @@ b.serve("me"); //print: Enjoy your breakfast, me.
 
 b.serveVip(); //print: Enjoy your breakfast, your majesty.
 
+// **************************
+
 class PrintsSelf {
   doIt() {
     print this;
@@ -39,6 +41,14 @@ selfPrinter.doIt();
 //print: object PrintsSelf{}
 selfPrinter.indirectlyDoIt();
 
+// we can take a reference to a method and it
+// stays bound to the object:
+var indirectlyDoIt = selfPrinter.indirectlyDoIt;
+//print: object PrintsSelf{}
+indirectlyDoIt();
+
+// **************************
+
 class PrintsInInit {
   init() {
       print "hai from init";
@@ -51,6 +61,9 @@ PrintsInInit();
 // TODO: should be illegal to explicitly call init:
 // PrintsInInit().init()
 // TODO: it would be illegal to have a return statement in init()
+// NB: the book has different opinions here...
+
+// **************************
 
 class RemembersProperty {
   init(foo) {
@@ -60,9 +73,10 @@ class RemembersProperty {
     print this.foo;
   }
 }
-
 //print: bar
 RemembersProperty("bar").printFoo();
+
+// **************************
 
 class MethodChainer {
   setFoo(foo) {
@@ -77,6 +91,10 @@ class MethodChainer {
 var chainer = MethodChainer().setFoo("foobar").setBar("barfoo");
 print chainer.foo; //print: foobar
 print chainer.bar; //print: barfoo
+// we can read undeclared properties:
+print chainer.baz; //print: nil
+
+// **************************
 
 class List {
   init(value, tail) {
@@ -113,8 +131,77 @@ print list.car();
 print list.value;
 //print: three
 
+// **************************
+
+fun makePlainObject() {
+  class Plain { }
+  return Plain();
+}
+var plain = makePlainObject();
+plain.foo = "bar";
+print plain.foo; //print: bar
+
+// **************************
+
+class Person {
+  sayName() {
+    print this.name;
+  }
+}
+
+var jane = Person();
+jane.name = "Jane";
+
+var bill = Person();
+bill.name = "Bill";
+
+// method stays bound to original object:
+bill.sayName = jane.sayName;
+//print: Jane
+bill.sayName();
+
+// **************************
+
+// prove that we can correctly bind
+// to things in non-local scopes:
+fun createPrinterFor(value) {
+  var twice = value + " " + value;
+  class Printer {
+    printIt() {
+      print value;
+    }
+    printItTwice() {
+      print twice;
+    }
+  }
+  return Printer();
+}
+var p = createPrinterFor("hello printer");
+p.printIt(); //print: hello printer
+p.printItTwice(); //print: hello printer hello printer
+
+// **************************
+
+// prove that `this` can be bound in a closure inside
+// a class:
+class Thing {
+  getCallback() {
+    fun localFunction() {
+      print this;
+    }
+    return localFunction;
+  }
+}
+var callback = Thing().getCallback();
+callback(); //print: object Thing{}
+
+// **************************
+
 // next steps:
 // - not sure if any major features are missing
 // - maybe should just try to write some interesting thing in lox and see how it works
 // - can add some error cases
-// - try classes nested in functions
+// - weird idea: class in function in class
+//   - would shadow the `this` name
+// - error case: referencing `this` outside a class
+//   - my implementation gives an error during interpretation

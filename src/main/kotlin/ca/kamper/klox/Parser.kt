@@ -32,6 +32,14 @@ class Parser(
         try {
             if (match(VAR)) return varDeclaration()
 
+            if (match(CLASS)) {
+                return classStmt()
+            }
+
+            if (match(FUN)) {
+                return declareFunctionStatement()
+            }
+
             return statement()
         } catch (e: ParseError) {
             synchronize()
@@ -70,16 +78,8 @@ class Parser(
             return blockStatement()
         }
 
-        if (match(FUN)) {
-            return declareFunctionStatement()
-        }
-
         if (match(RETURN)) {
             return returnStmt()
-        }
-
-        if (match(CLASS)) {
-            return classStmt()
         }
 
         return expressionStatement()

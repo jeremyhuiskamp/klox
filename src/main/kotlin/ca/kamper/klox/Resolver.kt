@@ -187,6 +187,8 @@ class Resolver(
     }
 
     override fun visitClassStmt(stmt: Stmt.Class) {
+        declare(stmt.name)
+        define(stmt.name)
         stmt.superName?.let { resolve(it) }
         inNewScope {
             val thisToken = stmt.name.copy(lexeme = "this")
