@@ -91,7 +91,7 @@ interface Stmt {
 
     data class Class(
         val name: Token,
-        val superName: Expr?, // must be Expr.Variable?
+        val superName: Expr.Variable?,
         val methods: List<FunctionDeclaration>,
     ) : Stmt {
         override fun <R> accept(visitor: Visitor<R>) =

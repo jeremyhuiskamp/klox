@@ -87,7 +87,10 @@ class Parser(
 
     private fun classStmt(): Stmt {
         val name = consume(IDENTIFIER, "Expect class name.")
-        // if check(<) get super-class
+        val superName =
+            if (match(LESS))
+                Expr.Variable(consume(IDENTIFIER, "Expect class name after '<'."))
+            else null
 
         consume(LEFT_BRACE, "Expect '{' to open class.")
 
@@ -98,7 +101,7 @@ class Parser(
             methods.add(declareFunctionStatement())
         }
 
-        return Stmt.Class(name, null, methods)
+        return Stmt.Class(name, superName, methods)
     }
 
     private fun returnStmt(): Stmt {
@@ -376,6 +379,14 @@ class Parser(
             return Expr.Variable(previous())
         } else if (match(THIS)) {
             return Expr.This(previous())
+        } else if (match(SUPER)) {
+            val keyword = previous()
+            consume(DOT, "Expect '.' after 'super'.")
+            val method = consume(
+                IDENTIFIER,
+                "Expect superclass method name after 'super.'",
+            )
+            return Expr.Super(keyword, method)
         }
 
         throw error(peek(), "Expect expression.")

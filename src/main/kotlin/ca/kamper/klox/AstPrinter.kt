@@ -38,6 +38,10 @@ class AstPrinter : Expr.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitSuperExpr(expr: Expr.Super): String {
+        TODO("Not yet implemented")
+    }
+
     private fun parenthesize(name: String, vararg exprs: Expr) =
         StringBuilder("($name")
             .let { builder ->

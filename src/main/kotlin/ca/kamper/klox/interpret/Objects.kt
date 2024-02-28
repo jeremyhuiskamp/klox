@@ -6,9 +6,15 @@ import ca.kamper.klox.Token
 
 class LoxClass(
     internal val name: String,
+    private val superClass: LoxClass?,
     methods: List<LoxFunction>,
 ) : LoxCallable {
     internal val methods = methods.associateBy { it.name.lexeme }
+
+    internal fun findMethod(name: String): LoxFunction? {
+        methods[name]?.let { return it }
+        return superClass?.findMethod(name)
+    }
 
     override fun call(interpreter: (Environment, Stmt) -> Unit, token: Token, arguments: List<Any?>): Any {
         val obj = LoxObject(this)
@@ -49,7 +55,7 @@ class LoxObject(
         // one class up the hierarchy.
 
         // We could probably pre-bind these for performance.
-        return klass.methods[name.lexeme]?.bindTo(this)
+        return klass.findMethod(name.lexeme)?.bindTo(this)
     }
 
     operator fun set(name: Token, value: Any?) {

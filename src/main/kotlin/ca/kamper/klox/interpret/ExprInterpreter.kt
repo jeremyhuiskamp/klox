@@ -147,7 +147,40 @@ abstract class ExprInterpreter : Expr.Visitor<Any?> {
         return left[expr.right]
     }
 
-    override fun visitThisExpr(expr: Expr.This) = lookupVariable(expr.token, expr)
+    override fun visitThisExpr(expr: Expr.This) = lookupVariable(expr.keyword, expr)
+
+    override fun visitSuperExpr(expr: Expr.Super): Any? {
+        // - do we need the resolved versions of super and this?
+        // - can we just look up the env stack?
+        // - for type safety, could/should we have a separate stack for this and super?
+        val distance = locals[expr] ?: throw RuntimeError(
+            expr.keyword, "Reference to 'super' in a class with no parent."
+        )
+        val superClass = environment.getAt(distance, expr.keyword)
+                as? LoxClass
+            ?: throw RuntimeError(
+                expr.keyword, "Interpreter bug: 'super' doesn't resolve to a class"
+            )
+
+        // Hmm, here we don't have a `this` token, we're just trying to get a
+        // reference to bind methods to.  We want the token for error messages
+        // in case the thing isn't found, which is possible for user code, but
+        // would be an interpreter bug in this case.
+        // Major hax, repurpose the super token for this:
+        val thisToken = expr.keyword.copy(lexeme = "this")
+        val instance = environment.getAt(distance - 1, thisToken)
+                as? LoxObject
+            ?: throw RuntimeError(
+                thisToken, "Interpreter bug: 'this' doesn't resolve to an object"
+            )
+
+        val method = superClass.findMethod(expr.method.lexeme) ?: throw RuntimeError(
+            expr.method,
+            "Undefined property '${expr.method.lexeme}'."
+        )
+
+        return method.bindTo(instance)
+    }
 
     companion object {
         private fun withDoubles(

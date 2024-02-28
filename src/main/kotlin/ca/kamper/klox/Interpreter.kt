@@ -41,16 +41,16 @@ class Interpreter(
         override fun evaluate(expr: Expr): Any? =
             this@Interpreter.evaluate(expr)
 
-        override fun withNewEnvironment(block: () -> Unit) {
-            withEnvironment(Environment(environment), block)
+        override fun <T> withNewEnvironment(block: () -> T): T {
+            return withEnvironment(Environment(environment), block)
         }
     }
 
-    private fun withEnvironment(environment: Environment, block: () -> Unit) {
+    private fun <T> withEnvironment(environment: Environment, block: () -> T): T {
         val previousEnvironment = this.environment
         try {
             this.environment = environment
-            block()
+            return block()
         } finally {
             this.environment = previousEnvironment
         }

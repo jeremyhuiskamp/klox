@@ -75,7 +75,11 @@ class Resolver(
         // This wouldn't work for, eg, javascript, where a `this` reference in
         // a free-standing function can be rebound to an object at runtime, but
         // falls through to the global scope if there is no object binding.
-        resolveLocal(expr, expr.token)
+        resolveLocal(expr, expr.keyword)
+    }
+
+    override fun visitSuperExpr(expr: Expr.Super) {
+        resolveLocal(expr, expr.keyword)
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
@@ -189,12 +193,29 @@ class Resolver(
     override fun visitClassStmt(stmt: Stmt.Class) {
         declare(stmt.name)
         define(stmt.name)
+
+        if (stmt.name.lexeme == stmt.superName?.name?.lexeme) {
+            // Is this a bit like `var a = a`?  If we try to resolve the
+            // superclass name first, could we shadow the name in the subclass?
+            // Well, not a useful idea anyway...
+            reportError(stmt.superName.name, "A class can't inherit from itself.")
+        }
         stmt.superName?.let { resolve(it) }
+
+        // TODO: only start new scope if superName is defined
         inNewScope {
-            val thisToken = stmt.name.copy(lexeme = "this")
-            declare(thisToken)
-            define(thisToken)
-            stmt.methods.forEach { resolveFunction(it) }
+            stmt.superName?.name?.copy(lexeme = "super")?.let {
+                declare(it)
+                define(it)
+            }
+
+            inNewScope {
+                stmt.name.copy(lexeme = "this").let {
+                    declare(it)
+                    define(it)
+                }
+                stmt.methods.forEach { resolveFunction(it) }
+            }
         }
     }
 }

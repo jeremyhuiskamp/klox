@@ -1,0 +1,3 @@
+var NotAClass = "not even close";
+
+class SubClass < NotAClass {} //error: Superclass must be a class.

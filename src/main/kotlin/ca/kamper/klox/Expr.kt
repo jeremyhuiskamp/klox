@@ -18,6 +18,7 @@ interface Expr {
         fun visitFunctionCall(expr: FunctionCall): R
         fun visitDotExpr(expr: Dot): R
         fun visitThisExpr(expr: This): R
+        fun visitSuperExpr(expr: Super): R
     }
 
     fun <R> accept(visitor: Visitor<R>): R
@@ -106,8 +107,14 @@ interface Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitDotExpr(this)
     }
 
-    // should this also support `super`?
-    class This(val token: Token) : Expr {
+    class This(val keyword: Token) : Expr {
         override fun <R> accept(visitor: Visitor<R>) = visitor.visitThisExpr(this)
+    }
+
+    class Super(
+        val keyword: Token,
+        val method: Token,
+    ) : Expr {
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visitSuperExpr(this)
     }
 }

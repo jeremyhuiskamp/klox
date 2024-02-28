@@ -1,0 +1,66 @@
+class Super {
+  doIt() {
+    print "in Super.doIt()";
+  }
+}
+
+class SubNoOverride < Super {
+}
+
+var noOverride = SubNoOverride();
+//print: in Super.doIt()
+noOverride.doIt();
+
+class Override < Super {
+  doIt() {
+    print "in Override.doIt()";
+  }
+}
+//print: in Override.doIt()
+Override().doIt();
+
+// **************************
+
+class Doughnut {
+  cook() {
+    print "Fry until golden brown.";
+  }
+}
+
+class BostonCream < Doughnut {
+  cook() {
+    super.cook();
+    print "Pipe full of custard and coat with chocolate.";
+  }
+}
+
+//print: Fry until golden brown.
+//print: Pipe full of custard and coat with chocolate.
+BostonCream().cook();
+
+// **************************
+
+// Shared property namespace
+
+class SuperWithProperty {
+  superSetIt(foo) {
+    this.foo = foo;
+  }
+  superGetIt() {
+    return this.foo;
+  }
+}
+class SubWithProperty < SuperWithProperty {
+  subSetIt(foo) {
+    this.foo = foo;
+  }
+  subGetIt() {
+    return this.foo;
+  }
+}
+
+var it = SubWithProperty();
+it.superSetIt("bar");
+print it.subGetIt(); //print: bar
+it.subSetIt("baz");
+print it.superGetIt(); //print: baz

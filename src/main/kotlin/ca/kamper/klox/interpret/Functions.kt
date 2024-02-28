@@ -23,9 +23,9 @@ val ToStringGlobal = LoxCallable { _, token, arguments ->
 
 class LoxFunction(
     val name: Token,
-    val parameters: List<Token>,
-    val body: Stmt,
-    val closure: Environment,
+    private val parameters: List<Token>,
+    private val body: Stmt,
+    private val closure: Environment,
 ) : LoxCallable {
     override fun call(interpreter: (Environment, Stmt) -> Unit, token: Token, arguments: List<Any?>): Any? {
         if (arguments.size != parameters.size) {

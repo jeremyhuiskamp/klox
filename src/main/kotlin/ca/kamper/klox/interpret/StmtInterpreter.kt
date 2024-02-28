@@ -2,14 +2,16 @@ package ca.kamper.klox.interpret
 
 import ca.kamper.klox.Environment
 import ca.kamper.klox.Expr
+import ca.kamper.klox.RuntimeError
 import ca.kamper.klox.Stmt
+
 
 abstract class StmtInterpreter(
     private val printer: (String) -> Unit = ::println,
 ) : Stmt.Visitor<Unit> {
     protected abstract fun evaluate(expr: Expr): Any?
     protected abstract val environment: Environment
-    protected abstract fun withNewEnvironment(block: () -> Unit)
+    protected abstract fun <T> withNewEnvironment(block: () -> T): T
 
     private fun execute(stmt: Stmt) = stmt.accept(this)
 
@@ -76,10 +78,28 @@ abstract class StmtInterpreter(
     }
 
     override fun visitClassStmt(stmt: Stmt.Class) {
-        val methods = stmt.methods.map {
-            // interesting: a method is also a closure?!
-            LoxFunction(it.name, it.parameters, it.body, environment)
+        val superClass = stmt.superName?.let {
+            evaluate(it) as? LoxClass ?: throw RuntimeError(it.name, "Superclass must be a class")
         }
-        environment.define(stmt.name.lexeme, LoxClass(stmt.name.lexeme, methods))
+
+        // not clear why book has this here?
+//        environment.define(stmt.name.lexeme, null)
+
+        val methods = withNewEnvironment {
+            superClass?.let {
+                environment.define("super", it)
+            }
+
+            stmt.methods.map {
+                // interesting: a method is also a closure?!
+                LoxFunction(it.name, it.parameters, it.body, environment)
+            }
+        }
+
+        // if above null define() is uncommented, this must become an assign()
+        environment.define(
+            stmt.name.lexeme,
+            LoxClass(stmt.name.lexeme, superClass, methods)
+        )
     }
 }
